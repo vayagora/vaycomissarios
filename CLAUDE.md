@@ -7,7 +7,7 @@ Este sistema segue a stack e os padrões do sistema de agências parceiras (`vay
 ## Stack
 - Next.js (App Router, TypeScript, Server Components/Actions)
 - Supabase: Postgres, Auth, RLS. Migrações em `supabase/migrations/` (nunca editar uma migração já aplicada; crie outra)
-- HubSpot via API REST (app privado, só leitura). Cliente em `src/lib/hubspot.ts`, sincronização em `src/lib/sync.ts`, mapeamento em `docs/HUBSPOT.md`
+- HubSpot via API REST (Service Key, só leitura). Cliente em `src/lib/hubspot.ts`, sincronização em `src/lib/sync.ts`, mapeamento em `docs/HUBSPOT.md`
 - Testes: Vitest (`npm test`)
 - Visual: design system Vay Agora em `src/app/tokens.css` + `src/app/globals.css`; fontes em `public/fonts/`. Use as variáveis semânticas, nunca hex soltos. Ícones Lucide em `src/components/Icon.tsx`
 

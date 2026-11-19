@@ -45,6 +45,8 @@ Registro apagado ou desassociado no HubSpot some do extrato na próxima sincroni
 - Todo dia às 06:00 (Brasília), pelo Vercel Cron (`vercel.json` → `/api/cron/sync`, protegido por `CRON_SECRET`).
 - Botão "Sincronizar com HubSpot" na lista (todos) e no detalhe do comissário (só ele).
 
-## App privado
+## Credencial (Service Key)
 
-Escopos (só leitura): `crm.objects.contacts.read` e o escopo de leitura do objeto Courses (na tela de escopos do app privado, procure por "courses"). O token vai em `HUBSPOT_TOKEN`.
+Desde 26/10/2026 o HubSpot não cria mais aplicativos privados: use uma **Service Key** (Configurações › Integrações › Service Keys). Escopos, só leitura: `crm.objects.contacts.read` e `crm.objects.courses.read`. A chave vai em `HUBSPOT_TOKEN` e é enviada como `Authorization: Bearer`.
+
+O objeto Courses precisa estar ativado na conta (já está: é o objeto "Créditos"). Há relatos de que `crm.objects.courses.read` não é concedido a aplicativos privados; com Service Key funciona.

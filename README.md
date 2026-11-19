@@ -32,8 +32,8 @@ O sistema **não envia e-mails**: não é preciso configurar SMTP nem modelos de
 
 ### 2. HubSpot
 
-1. Crie um app privado com escopos de leitura de contatos e do objeto Courses (Créditos). Detalhes em `docs/HUBSPOT.md`.
-2. Copie o token.
+1. Crie uma **Service Key** (Configurações › Integrações › Service Keys) só com leitura: `crm.objects.contacts.read` e `crm.objects.courses.read`. Desde 26/10/2026 o HubSpot não cria mais aplicativos privados. Detalhes em `docs/HUBSPOT.md`.
+2. Copie a chave para a variável `HUBSPOT_TOKEN` na Vercel.
 
 ### 3. Vercel (hospedagem)
 
