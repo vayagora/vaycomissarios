@@ -10,7 +10,7 @@ export default function SetPasswordPage() {
     <AuthFrame>
       <div className="stack" style={{ gap: 8 }}>
         <h2 style={{ fontSize: 30 }}>Crie sua senha</h2>
-        <p className="muted">Use pelo menos 8 caracteres.</p>
+        <p className="muted">Troque a senha provisória por uma só sua, com pelo menos 8 caracteres.</p>
       </div>
       <form action={action} className="form">
         <div className="field">

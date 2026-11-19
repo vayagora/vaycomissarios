@@ -13,7 +13,7 @@ export const getSession = cache(async (): Promise<Session | null> => {
   if (!user) return null;
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, email, full_name, role, commissioner_id")
+    .select("id, email, full_name, role, commissioner_id, must_change_password")
     .eq("id", user.id)
     .single<Profile>();
   if (!profile) return null;

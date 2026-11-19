@@ -3,9 +3,8 @@
 // Todas as gravações do sistema. Créditos NUNCA são lançados aqui: só o HubSpot cria e corrige
 // lançamentos; o sistema apenas lê (sincronização).
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 import { categoryStatus, validateUntil } from "@/lib/categories";
-import { encryptSecret } from "@/lib/crypto";
+import { encryptSecret, tempPassword } from "@/lib/crypto";
 import { requireSession, requireVay } from "@/lib/data";
 import { fmtDate, lower, todayIso } from "@/lib/format";
 import { COMPANIES, isValidTier } from "@/lib/programs";
@@ -30,49 +29,41 @@ export async function syncNow(commissionerId?: string): Promise<Result> {
 
 // ---------------------------------------------------------------- Comissários
 
-async function siteUrl() {
-  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host");
-  const proto = h.get("x-forwarded-proto") ?? "https";
-  return `${proto}://${host}`;
-}
-
 // Comissários vêm do HubSpot (sincronização); aqui só se dá acesso ao portal.
-// O e-mail do convite é o do contato no HubSpot.
-export async function inviteCommissioner(commissionerId: string): Promise<Result> {
+// Sem e-mail: o login é o e-mail do contato no HubSpot e a senha provisória é mostrada uma única vez
+// para a Vay mandar pelo WhatsApp. No primeiro acesso, o comissário é obrigado a trocá-la.
+// Chamar de novo gera outra senha provisória (o comissário que esqueceu a senha).
+export async function createPortalAccess(commissionerId: string): Promise<Result & { email?: string; password?: string }> {
   await requireVay();
   const supabase = await createClient();
-  const { data: c } = await supabase.from("commissioners").select("id, name, email").eq("id", commissionerId).single();
+  const { data: c } = await supabase.from("commissioners").select("id, name, email, in_program").eq("id", commissionerId).single();
   if (!c) return { error: "Comissário não encontrado." };
+  if (!c.in_program) return { error: "Sem a marcação “Comissário” no HubSpot: não pode ter acesso." };
   const email = lower(c.email);
   if (!isEmail(email)) return { error: "O contato não tem e-mail válido no HubSpot. Corrija lá e sincronize." };
 
   const admin = createAdminClient();
-  // Já tem usuário com esse e-mail (ex.: convite anterior): só liga ao comissário e reenvia o link
+  const password = tempPassword();
   const { data: existing } = await admin.from("profiles").select("id, role").eq("email", email).maybeSingle();
   if (existing?.role === "vay") return { error: "Esse e-mail é de um usuário da equipe Vay." };
-  if (existing) {
-    const { error } = await admin.from("profiles").update({ role: "comissario", commissioner_id: c.id }).eq("id", existing.id);
-    if (error) return { error: "Não foi possível ligar o acesso existente." };
-    await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${await siteUrl()}/auth/confirm?next=/definir-senha` });
-    revalidatePath("/", "layout");
-    return { ok: `${firstName(c.name)} já tinha acesso. Enviamos um link para criar uma nova senha em ${email}.` };
-  }
 
-  const inv = await admin.auth.admin.inviteUserByEmail(email, {
-    data: { full_name: c.name },
-    redirectTo: `${await siteUrl()}/auth/confirm?next=/definir-senha`,
-  });
-  if (inv.error || !inv.data.user) return { error: `Não foi possível convidar: ${inv.error?.message ?? "convite não criado"}` };
+  let userId = existing?.id as string | undefined;
+  if (userId) {
+    const { error } = await admin.auth.admin.updateUserById(userId, { password });
+    if (error) return { error: `Não foi possível gerar a nova senha: ${error.message}` };
+  } else {
+    const { data, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { full_name: c.name } });
+    if (error || !data.user) return { error: `Não foi possível criar o acesso: ${error?.message ?? "usuário não criado"}` };
+    userId = data.user.id;
+  }
   // O papel é gravado pelo servidor, nunca a partir de metadados do usuário.
   const { error: pErr } = await admin
     .from("profiles")
-    .update({ role: "comissario", commissioner_id: c.id, full_name: c.name })
-    .eq("id", inv.data.user.id);
-  if (pErr) return { error: `Convite enviado, mas não foi possível ligar o acesso: ${pErr.message}` };
+    .update({ role: "comissario", commissioner_id: c.id, full_name: c.name, must_change_password: true })
+    .eq("id", userId);
+  if (pErr) return { error: `Acesso criado, mas não foi possível ligá-lo ao comissário: ${pErr.message}` };
   revalidatePath("/", "layout");
-  return { ok: `Convite enviado para ${email}.` };
+  return { ok: existing ? "Nova senha provisória gerada." : "Acesso criado.", email, password };
 }
 
 // ---------------------------------------------------------------- Categorias de milha

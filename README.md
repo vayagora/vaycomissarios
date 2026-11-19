@@ -9,9 +9,9 @@ Especificação: `docs/SPEC.md` (handoff do protótipo validado em 19/11/2026). 
 | Quem | O que vê e faz |
 |---|---|
 | **Comissário** | Início (saldo, parceria, categorias), Meus programas (categorias vigentes, benefícios, login e senha do programa guardados para consulta própria), Extrato e Meu termo de parceria. Só leitura, exceto os próprios dados de acesso. Pedidos de passagem pelo WhatsApp do menu. |
-| **Equipe Vay Agora** | Lista de comissários (importados do HubSpot) com KPIs, busca e filtros; no detalhe: convidar para o portal, atribuir, alterar, excluir e recadastrar categorias de milha; editar o termo; ver o extrato. Sincronizar com o HubSpot. |
+| **Equipe Vay Agora** | Lista de comissários (importados do HubSpot) com KPIs, busca e filtros; no detalhe: criar o acesso ao portal (senha provisória pelo WhatsApp), atribuir, alterar, excluir e recadastrar categorias de milha; editar o termo; ver o extrato. Sincronizar com o HubSpot. |
 
-- **Comissários vêm do HubSpot**: todo contato com "Comissário" marcado em "Condições Especiais" é importado na sincronização, com saldo e extrato. A Vay não cadastra comissários; só envia o convite de acesso ao portal.
+- **Comissários vêm do HubSpot**: todo contato com "Comissário" marcado em "Condições Especiais" é importado na sincronização, com saldo e extrato. A Vay não cadastra comissários; só cria o acesso ao portal.
 - **Categorias de milha**: atribuídas à mão pela Vay, uma por empresa, com validade futura obrigatória. Vigentes até a data de validade (inclusive); no dia seguinte, encerram sozinhas: somem do portal e vão para "Encerradas" no painel.
 - **Senhas dos programas**: cifradas (AES-256-GCM) e legíveis só pelo próprio comissário. A equipe Vay não tem acesso a esse campo, nem pelo banco com o usuário dela.
 
@@ -23,13 +23,12 @@ Igual ao sistema de agências parceiras: **Next.js 15** (App Router, Server Acti
 
 ### 1. Supabase (banco e login)
 
-1. Crie um projeto novo em <https://supabase.com> (região *South America (São Paulo)*).
-2. Em **SQL Editor › New query**, cole `supabase/migrations/0001_init.sql` e clique em **Run**.
-3. Em **Authentication › Sign In / Providers**, desligue **Allow new users to sign up**. O acesso é só por convite.
-4. Em **Authentication › Emails**, troque o link dos modelos:
-   - **Invite user**: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite&next=/definir-senha`
-   - **Reset password**: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/definir-senha`
-5. Em **Project Settings › API**, copie a *Project URL*, a chave *anon public* e a chave *service_role*.
+1. Crie um projeto novo em <https://supabase.com> (região *South America (São Paulo)*). Não precisa integrar com o GitHub.
+2. Em **SQL Editor › New query**, cole `supabase/migrations/0001_init.sql` e clique em **Run**. Depois, numa nova query, faça o mesmo com `0002_acesso_sem_email.sql`.
+3. Em **Authentication › Sign In / Providers**, desligue **Allow new users to sign up**. O acesso é só pelo botão "Criar acesso ao portal".
+4. Em **Project Settings › API**, copie a *Project URL*, a chave *anon public* e a chave *service_role*.
+
+O sistema **não envia e-mails**: não é preciso configurar SMTP nem modelos de e-mail.
 
 ### 2. HubSpot
 
@@ -41,14 +40,12 @@ Igual ao sistema de agências parceiras: **Next.js 15** (App Router, Server Acti
 1. Importe o repositório na Vercel.
 2. Em **Environment Variables**, preencha as variáveis de `.env.example`:
    - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
-   - `NEXT_PUBLIC_SITE_URL`: o endereço final
    - `CREDENTIALS_KEY`: gere uma vez com o comando abaixo e **guarde num cofre de senhas**. Se ela mudar ou se perder, as senhas já guardadas pelos comissários ficam ilegíveis.
      ```bash
      node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
      ```
    - `HUBSPOT_TOKEN`, `HUBSPOT_PORTAL_ID` (44656712) e `CRON_SECRET` (qualquer texto longo e aleatório)
 3. Clique em **Deploy**. A sincronização diária (06:00 de Brasília) já vem configurada em `vercel.json`.
-4. No Supabase, em **Authentication › URL Configuration**, coloque o mesmo endereço em **Site URL**.
 
 ### 4. Primeiro acesso da equipe Vay
 
@@ -57,7 +54,11 @@ Igual ao sistema de agências parceiras: **Next.js 15** (App Router, Server Acti
    ```sql
    update profiles set role = 'vay', full_name = 'Seu Nome' where email = 'seu-email@vayagora.com.br';
    ```
-3. Entre no sistema, abra **Comissários** e clique em **Sincronizar com HubSpot**: os comissários são importados. Em cada um, **Convidar para o portal** envia o acesso para o e-mail do contato.
+3. Entre no sistema, abra **Comissários** e clique em **Sincronizar com HubSpot**: os comissários são importados.
+
+### 5. Acesso dos comissários (sem e-mail)
+
+No detalhe de cada comissário, **Criar acesso ao portal** cria o login (o e-mail do contato no HubSpot) e mostra uma **senha provisória uma única vez**, com um botão para copiar a mensagem pronta para o WhatsApp. No primeiro acesso, o comissário é obrigado a criar a própria senha. Esqueceu a senha? O comissário fala com a Vay no WhatsApp e a Vay usa **Gerar nova senha** no mesmo lugar.
 
 Para dar acesso a outro colega da Vay, repita os passos 1 e 2 para ele.
 

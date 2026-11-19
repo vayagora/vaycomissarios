@@ -30,3 +30,12 @@ describe("cifra das senhas", () => {
     expect(() => encryptSecret("x", Buffer.from("curta").toString("base64"))).toThrow(/32 bytes/);
   });
 });
+
+describe("senha provisória", () => {
+  it("12 caracteres legíveis, sem 0/O/1/l/I, e diferentes a cada vez", async () => {
+    const { tempPassword } = await import("./crypto");
+    const a = tempPassword();
+    expect(a).toMatch(/^[A-HJ-NP-Za-km-np-z2-9]{12}$/);
+    expect(new Set(Array.from({ length: 50 }, () => tempPassword())).size).toBe(50);
+  });
+});

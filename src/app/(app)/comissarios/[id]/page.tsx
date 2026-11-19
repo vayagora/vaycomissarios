@@ -10,7 +10,7 @@ import { brl, fmtDate, maskCpf, monthYear, todayIso, whenLabel } from "@/lib/for
 import { contactUrl } from "@/lib/hubspot";
 import { byCompany } from "@/lib/programs";
 import { buildStatement, totals } from "@/lib/statement";
-import { InviteButton } from "./InviteButton";
+import { AccessButton } from "./AccessButton";
 import { AssignButton, CategoriesProvider, CategoriesSection, type CatView } from "./Categories";
 import { TermEditor } from "./TermEditor";
 
@@ -50,7 +50,7 @@ export default async function ComissarioPage({ params }: { params: Promise<{ id:
         </div>
         <div className="row">
           {c.in_program ? (
-            <InviteButton commissionerId={c.id} email={c.email} access={access} />
+            <AccessButton commissionerId={c.id} name={c.name} email={c.email} access={access} />
           ) : (
             <span className="row" style={{ gap: 6 }}>
               <span className="badge yellow">Sem a marcação “Comissário” no HubSpot</span>

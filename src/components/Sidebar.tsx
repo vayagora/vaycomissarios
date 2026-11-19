@@ -7,7 +7,7 @@ import { logout } from "@/app/login/actions";
 import { Icon } from "./Icon";
 import { Avatar } from "./ui";
 
-export const WHATSAPP_URL = "https://wa.me/553184698918";
+import { WHATSAPP_URL } from "@/lib/contact";
 
 const COMISSARIO = [
   { href: "/inicio", label: "Início", icon: "home" },

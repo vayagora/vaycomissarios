@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 
 export type FormState = { error?: string; ok?: string } | undefined;
 
@@ -22,22 +22,19 @@ export async function logout() {
   redirect("/login");
 }
 
-export async function forgotPassword(_: FormState, form: FormData): Promise<FormState> {
-  const email = String(form.get("email") ?? "").trim().toLowerCase();
-  if (!/^\S+@\S+\.\S+$/.test(email)) return { error: "Informe um e-mail válido." };
-  const supabase = await createClient();
-  await supabase.auth.resetPasswordForEmail(email);
-  // Mesma resposta exista ou não a conta, para não revelar quem tem acesso.
-  return { ok: "Se houver uma conta com esse e-mail, enviamos um link para criar uma nova senha." };
-}
-
 export async function setPassword(_: FormState, form: FormData): Promise<FormState> {
   const password = String(form.get("password") ?? "");
   const confirm = String(form.get("confirm") ?? "");
   if (password.length < 8) return { error: "A senha precisa ter pelo menos 8 caracteres." };
   if (password !== confirm) return { error: "As senhas não conferem." };
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Sua sessão expirou. Entre de novo." };
   const { error } = await supabase.auth.updateUser({ password });
-  if (error) return { error: "Não foi possível salvar a senha. Abra o link do e-mail novamente." };
+  if (error) return { error: error.message.includes("different") ? "Escolha uma senha diferente da provisória." : "Não foi possível salvar a senha." };
+  // O perfil só é alterado pelo servidor (RLS): limpa a marcação de senha provisória
+  await createAdminClient().from("profiles").update({ must_change_password: false }).eq("id", user.id);
   redirect("/");
 }

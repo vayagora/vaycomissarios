@@ -6,6 +6,7 @@ export type Profile = {
   full_name: string | null;
   role: Role;
   commissioner_id: string | null;
+  must_change_password: boolean;
 };
 
 export type TermLists = { term_receives: string[]; term_can: string[]; term_cannot: string[] };

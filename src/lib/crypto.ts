@@ -25,3 +25,17 @@ export function decryptSecret(enc: string, rawKey?: string): string {
   d.setAuthTag(Buffer.from(tag, "base64"));
   return Buffer.concat([d.update(Buffer.from(ct, "base64")), d.final()]).toString("utf8");
 }
+
+// Senha provisória legível para mandar pelo WhatsApp (sem caracteres que se confundem: 0/O, 1/l/I).
+const ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+export function tempPassword(length = 12): string {
+  const out: string[] = [];
+  // Rejeição para não enviesar a distribuição
+  while (out.length < length) {
+    for (const b of randomBytes(length * 2)) {
+      if (b < 256 - (256 % ALPHABET.length)) out.push(ALPHABET[b % ALPHABET.length]);
+      if (out.length === length) break;
+    }
+  }
+  return out.join("");
+}

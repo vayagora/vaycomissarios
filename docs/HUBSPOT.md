@@ -12,7 +12,7 @@ O sistema **importa** os comissários do HubSpot; a Vay não cadastra ninguém �
 - Desmarcou a opção no HubSpot: na próxima sincronização o comissário sai da lista e perde o acesso ao portal (RLS). Categorias de milha e termo ficam guardados; se a marcação voltar, tudo reaparece.
 - "Comissário desde" = data do primeiro crédito com motivo "Programa Comissário" do contato (sem nenhum, a do primeiro crédito).
 - Nome, e-mail, CPF e saldo são atualizados a cada sincronização a partir do contato.
-- O acesso ao portal é dado pela Vay no detalhe do comissário ("Convidar para o portal"), usando o e-mail do contato.
+- O acesso ao portal é criado pela Vay no detalhe do comissário ("Criar acesso ao portal"): login = e-mail do contato, senha provisória mandada pelo WhatsApp.
 
 Por que não pelo motivo do crédito: em 19/11/2026, 38 contatos tinham a marcação, mas o lote de "Crédito Mensal - Programa Comissário" de novembro foi para 70 contatos (37 dos marcados + 33 sem marcação, muitos com o sobrenome de um comissário). O crédito do programa não identifica quem é o comissário; a marcação, sim.
 
@@ -44,7 +44,6 @@ Registro apagado ou desassociado no HubSpot some do extrato na próxima sincroni
 
 - Todo dia às 06:00 (Brasília), pelo Vercel Cron (`vercel.json` → `/api/cron/sync`, protegido por `CRON_SECRET`).
 - Botão "Sincronizar com HubSpot" na lista (todos) e no detalhe do comissário (só ele).
-- Ao convidar um comissário não há sincronização: os dados já estão no sistema.
 
 ## App privado
 
