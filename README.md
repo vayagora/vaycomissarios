@@ -40,10 +40,7 @@ O sistema **não envia e-mails**: não é preciso configurar SMTP nem modelos de
 1. Importe o repositório na Vercel.
 2. Em **Environment Variables**, preencha as variáveis de `.env.example`:
    - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
-   - `CREDENTIALS_KEY`: gere uma vez com o comando abaixo e **guarde num cofre de senhas**. Se ela mudar ou se perder, as senhas já guardadas pelos comissários ficam ilegíveis.
-     ```bash
-     node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
-     ```
+   - `CREDENTIALS_KEY`: uma senha longa (24+ caracteres) criada num gerador de senhas. **Guarde no cofre de senhas antes de colar.** Se ela mudar ou se perder, as senhas já guardadas pelos comissários ficam ilegíveis.
    - `HUBSPOT_TOKEN`, `HUBSPOT_PORTAL_ID` (44656712) e `CRON_SECRET` (qualquer texto longo e aleatório)
 3. Clique em **Deploy**. A sincronização diária (06:00 de Brasília) já vem configurada em `vercel.json`.
 

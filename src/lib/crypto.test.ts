@@ -25,9 +25,11 @@ describe("cifra das senhas", () => {
     expect(encryptSecret("", key)).toBe("");
     expect(decryptSecret("", key)).toBe("");
   });
-  it("exige chave de 32 bytes", () => {
+  it("exige chave longa; aceita qualquer texto de 24+ caracteres", () => {
     expect(() => encryptSecret("x", "")).toThrow(/CREDENTIALS_KEY/);
-    expect(() => encryptSecret("x", Buffer.from("curta").toString("base64"))).toThrow(/32 bytes/);
+    expect(() => encryptSecret("x", "curta")).toThrow(/24 caracteres/);
+    const frase = "Uma frase longa qualquer da Vay 2026!";
+    expect(decryptSecret(encryptSecret("abc", frase), frase)).toBe("abc");
   });
 });
 

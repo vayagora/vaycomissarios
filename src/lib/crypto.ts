@@ -1,12 +1,14 @@
 // Cifra das senhas dos programas guardadas pelo comissário (AES-256-GCM).
-// A chave fica só no servidor (CREDENTIALS_KEY, 32 bytes em base64). Formato: v1:<iv>:<tag>:<cifrado>.
-import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
+// A chave fica só no servidor (CREDENTIALS_KEY). Aceita qualquer senha longa (24+ caracteres),
+// transformada numa chave de 32 bytes por SHA-256. Formato do cifrado: v1:<iv>:<tag>:<cifrado>.
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
+
+export const MIN_KEY_LENGTH = 24;
 
 function key(raw = process.env.CREDENTIALS_KEY): Buffer {
   if (!raw) throw new Error("CREDENTIALS_KEY não configurada.");
-  const k = Buffer.from(raw, "base64");
-  if (k.length !== 32) throw new Error("CREDENTIALS_KEY precisa ter 32 bytes em base64.");
-  return k;
+  if (raw.length < MIN_KEY_LENGTH) throw new Error(`CREDENTIALS_KEY precisa ter pelo menos ${MIN_KEY_LENGTH} caracteres.`);
+  return createHash("sha256").update(raw, "utf8").digest();
 }
 
 export function encryptSecret(plain: string, rawKey?: string): string {
