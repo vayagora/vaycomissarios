@@ -11,12 +11,14 @@ export const getSession = cache(async (): Promise<Session | null> => {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return null;
-  const { data: profile } = await supabase
+  const { data: profile, error } = await supabase
     .from("profiles")
     .select("id, email, full_name, role, commissioner_id, must_change_password")
     .eq("id", user.id)
-    .single<Profile>();
-  if (!profile) return null;
+    .maybeSingle<Profile>();
+  // Falha ao ler o perfil (ex.: migração faltando) não pode virar volta silenciosa ao login
+  if (error) throw new Error(`Não foi possível ler o perfil: ${error.message}`);
+  if (!profile) throw new Error("Usuário sem perfil no sistema. Confira a tabela profiles no Supabase.");
   return { profile, isVay: profile.role === "vay" };
 });
 
