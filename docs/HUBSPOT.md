@@ -6,16 +6,15 @@ A sincronização (`src/lib/sync.ts`, cliente em `src/lib/hubspot.ts`) só **lê
 
 O sistema **importa** os comissários do HubSpot; a Vay não cadastra ninguém à mão.
 
-**Comissário = contato associado a pelo menos um registro de Créditos com motivo (`motivo_do_credito`) "Programa Comissário".**
+**Comissário = contato com a opção "Comissário" marcada em "Condições Especiais" (`condicoes_especiais`, seleção múltipla).**
 
-- A sincronização busca todos esses registros (`/crm/v3/objects/0-410/search`), lê os contatos associados (`/crm/v4/associations/0-410/contacts/batch/read`) e cria no sistema os que ainda não existem.
-- "Comissário desde" = data do primeiro crédito do Programa Comissário do contato.
+- A sincronização busca esses contatos (`/crm/v3/objects/contacts/search`, `condicoes_especiais IN ["Comissário"]`) e cria no sistema os que ainda não existem.
+- Desmarcou a opção no HubSpot: na próxima sincronização o comissário sai da lista e perde o acesso ao portal (RLS). Categorias de milha e termo ficam guardados; se a marcação voltar, tudo reaparece.
+- "Comissário desde" = data do primeiro crédito com motivo "Programa Comissário" do contato (sem nenhum, a do primeiro crédito).
 - Nome, e-mail, CPF e saldo são atualizados a cada sincronização a partir do contato.
-- Para alguém entrar no programa, basta lançar o primeiro crédito com esse motivo e associá-lo ao contato. Atenção: um crédito "Programa Comissário" associado por engano a outro contato também torna esse contato comissário.
-- Comissário que deixa de ter créditos do programa não é apagado do sistema (o histórico fica).
 - O acesso ao portal é dado pela Vay no detalhe do comissário ("Convidar para o portal"), usando o e-mail do contato.
 
-Em 19/11/2026: 243 registros com esse motivo desde 09/09/2026; 70 créditos mensais em novembro.
+Por que não pelo motivo do crédito: em 19/11/2026, 38 contatos tinham a marcação, mas o lote de "Crédito Mensal - Programa Comissário" de novembro foi para 70 contatos (37 dos marcados + 33 sem marcação, muitos com o sobrenome de um comissário). O crédito do programa não identifica quem é o comissário; a marcação, sim.
 
 ## Contato (`contacts`)
 

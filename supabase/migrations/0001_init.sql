@@ -8,8 +8,9 @@ create extension if not exists pgcrypto;
 -- ---------------------------------------------------------------
 
 -- Comissário, importado do HubSpot pela sincronização (a Vay não cadastra à mão).
--- Comissário = contato associado a algum registro de Créditos com motivo "Programa Comissário".
--- Não existe status: todo comissário é ativo.
+-- Comissário = contato com "Comissário" marcado em "Condições Especiais" (condicoes_especiais).
+-- Não existe status de comissário. in_program é só o espelho da marcação: quem perde a marcação
+-- sai da lista e do portal, mas categorias e termo ficam guardados se ela voltar.
 create table public.commissioners (
   id                 uuid primary key default gen_random_uuid(),
   -- Contato no HubSpot (nome, e-mail, CPF, saldo e extrato vêm de lá)
@@ -18,7 +19,9 @@ create table public.commissioners (
   email              text not null default '',
   -- CPF como está no HubSpot; a tela sempre mostra mascarado
   cpf                text not null default '',
-  -- Data do primeiro crédito do Programa Comissário
+  -- Marcação "Comissário" presente no HubSpot na última sincronização
+  in_program         boolean not null default true,
+  -- Data do primeiro crédito do Programa Comissário (ou do primeiro crédito do contato)
   since              date not null default current_date,
   -- "Saldo atual em créditos" (creditos_abertos) na última sincronização
   balance            numeric(12, 2) not null default 0,
@@ -104,9 +107,11 @@ language sql stable security definer set search_path = public as $$
   select exists (select 1 from profiles where id = auth.uid() and role = 'vay');
 $$;
 
+-- Só vale enquanto o contato estiver marcado como comissário no HubSpot
 create or replace function public.my_commissioner_id() returns uuid
 language sql stable security definer set search_path = public as $$
-  select commissioner_id from profiles where id = auth.uid() and role = 'comissario';
+  select p.commissioner_id from profiles p join commissioners c on c.id = p.commissioner_id
+  where p.id = auth.uid() and p.role = 'comissario' and c.in_program;
 $$;
 
 -- "Hoje" no horário de Brasília

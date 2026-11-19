@@ -11,7 +11,7 @@ Especificação: `docs/SPEC.md` (handoff do protótipo validado em 19/11/2026). 
 | **Comissário** | Início (saldo, parceria, categorias), Meus programas (categorias vigentes, benefícios, login e senha do programa guardados para consulta própria), Extrato e Meu termo de parceria. Só leitura, exceto os próprios dados de acesso. Pedidos de passagem pelo WhatsApp do menu. |
 | **Equipe Vay Agora** | Lista de comissários (importados do HubSpot) com KPIs, busca e filtros; no detalhe: convidar para o portal, atribuir, alterar, excluir e recadastrar categorias de milha; editar o termo; ver o extrato. Sincronizar com o HubSpot. |
 
-- **Comissários vêm do HubSpot**: todo contato com algum lançamento de Créditos com motivo "Programa Comissário" é importado na sincronização, com saldo e extrato. A Vay não cadastra comissários; só envia o convite de acesso ao portal.
+- **Comissários vêm do HubSpot**: todo contato com "Comissário" marcado em "Condições Especiais" é importado na sincronização, com saldo e extrato. A Vay não cadastra comissários; só envia o convite de acesso ao portal.
 - **Categorias de milha**: atribuídas à mão pela Vay, uma por empresa, com validade futura obrigatória. Vigentes até a data de validade (inclusive); no dia seguinte, encerram sozinhas: somem do portal e vão para "Encerradas" no painel.
 - **Senhas dos programas**: cifradas (AES-256-GCM) e legíveis só pelo próprio comissário. A equipe Vay não tem acesso a esse campo, nem pelo banco com o usuário dela.
 

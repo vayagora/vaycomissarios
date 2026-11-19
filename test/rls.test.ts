@@ -147,6 +147,19 @@ describe.skipIf(!url)("RLS · regras de acesso", () => {
       });
     });
 
+    it("sem a marcação de comissário no HubSpot, perde o acesso a tudo", async () => {
+      await db.query("begin");
+      try {
+        await db.query(`update commissioners set in_program = false where id = $1`, [ID.ca]);
+        await db.query(`select set_config('request.jwt.claim.sub', $1, true)`, [ID.ua]);
+        await db.query("set local role authenticated");
+        for (const t of ["commissioners", "credit_entries", "mile_categories", "program_credentials"])
+          expect(await rows(`select * from ${t}`)).toEqual([]);
+      } finally {
+        await db.query("rollback");
+      }
+    });
+
     it("não vê o histórico de sincronização", () =>
       as(ID.ua, async () => {
         expect(await rows(`select * from sync_runs`)).toEqual([]);

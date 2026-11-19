@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { planCommissioners, readContact, readCredit } from "./hubspot";
+import { readContact, readCredit, sinceFromCredits } from "./hubspot";
 
 describe("HubSpot → extrato", () => {
   it("acúmulo usa [ACÚMULO] Valor creditado", () => {
@@ -44,24 +44,18 @@ describe("HubSpot → extrato", () => {
   });
 });
 
-describe("quem é comissário", () => {
-  it("contatos associados a créditos do Programa Comissário, desde o primeiro crédito (fuso de Brasília)", () => {
-    const credits = [
-      { id: "c1", created_on: "2026-10-04T12:00:00Z" },
-      { id: "c2", created_on: "2026-09-10T02:00:00Z" }, // 09/09 às 23h em Brasília
-      { id: "c3", created_on: "2026-11-04T12:00:00Z" },
-      { id: "c4", created_on: "2026-11-04T12:00:00Z" }, // sem contato associado
-    ];
-    const links = new Map([
-      ["c1", ["111"]],
-      ["c2", ["111"]],
-      ["c3", ["222", "333"]],
-    ]);
-    const since = planCommissioners(credits, links);
-    expect([...since.entries()].sort()).toEqual([
-      ["111", "2026-09-09"],
-      ["222", "2026-11-04"],
-      ["333", "2026-11-04"],
-    ]);
+describe("comissário desde", () => {
+  it("primeiro crédito do Programa Comissário, no fuso de Brasília", () => {
+    expect(
+      sinceFromCredits([
+        { created_on: "2026-10-04T12:00:00Z", reason: "Programa Comissário" },
+        { created_on: "2026-09-10T02:00:00Z", reason: "Programa Comissário" }, // 09/09 às 23h em Brasília
+        { created_on: "2025-01-01T12:00:00Z", reason: "Nova compra" },
+      ]),
+    ).toBe("2026-09-09");
+  });
+  it("sem crédito do programa: o primeiro crédito do contato; sem créditos: nada", () => {
+    expect(sinceFromCredits([{ created_on: "2026-05-02T12:00:00Z", reason: "Nova compra" }])).toBe("2026-05-02");
+    expect(sinceFromCredits([])).toBeNull();
   });
 });

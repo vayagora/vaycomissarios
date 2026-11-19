@@ -118,55 +118,32 @@ export async function readContacts(cfg: HubspotConfig, ids: string[]): Promise<M
   return out;
 }
 
-// Motivo que marca um registro de Créditos como do Programa Comissário.
-// Comissário = contato associado a pelo menos um registro com este motivo.
-export const COMMISSIONER_REASON = "Programa Comissário";
+// Quem é comissário: contato com a opção "Comissário" em "Condições Especiais" (seleção múltipla).
+export const COMMISSIONER_PROP = "condicoes_especiais";
+export const COMMISSIONER_VALUE = "Comissário";
 
-export type ProgramCredit = { id: string; created_on: string };
-
-// Todos os registros de Créditos do Programa Comissário (busca paginada; limite da API: 10 mil)
-export async function searchProgramCredits(cfg: HubspotConfig, reason = COMMISSIONER_REASON): Promise<ProgramCredit[]> {
-  const out: ProgramCredit[] = [];
+export async function searchCommissionerContacts(cfg: HubspotConfig): Promise<HsContact[]> {
+  const out: HsContact[] = [];
   let after: string | undefined;
   do {
-    const r = await call<BatchRead & { paging?: { next?: { after?: string } } }>(cfg, `/crm/v3/objects/${CREDITS_OBJECT}/search`, {
-      filterGroups: [{ filters: [{ propertyName: "motivo_do_credito", operator: "EQ", value: reason }] }],
-      properties: ["hs_createdate"],
-      sorts: [{ propertyName: "hs_createdate", direction: "ASCENDING" }],
+    const r = await call<BatchRead & { paging?: { next?: { after?: string } } }>(cfg, "/crm/v3/objects/contacts/search", {
+      filterGroups: [{ filters: [{ propertyName: COMMISSIONER_PROP, operator: "IN", values: [COMMISSIONER_VALUE] }] }],
+      properties: [...CONTACT_PROPS],
       limit: 200,
       after,
     });
-    for (const c of r.results) out.push({ id: c.id, created_on: String(c.properties.hs_createdate || c.createdAt || "") });
+    for (const c of r.results) out.push(readContact(c.id, c.properties));
     after = r.paging?.next?.after;
   } while (after);
   return out;
 }
 
-// Registro de Créditos → contatos associados
-export async function creditContacts(cfg: HubspotConfig, creditIds: string[]): Promise<Map<string, string[]>> {
-  const out = new Map<string, string[]>();
-  for (const part of chunk(creditIds, 100)) {
-    const r = await call<{ results: { from: { id: string }; to: { toObjectId: number | string }[] }[] }>(
-      cfg,
-      `/crm/v4/associations/${CREDITS_OBJECT}/contacts/batch/read`,
-      { inputs: part.map((id) => ({ id })) },
-    );
-    for (const row of r.results) out.set(String(row.from.id), row.to.map((t) => String(t.toObjectId)));
-  }
-  return out;
-}
-
-// Quem é comissário e desde quando (data do primeiro crédito do programa, no fuso de Brasília).
-export function planCommissioners(credits: ProgramCredit[], links: Map<string, string[]>): Map<string, string> {
-  const since = new Map<string, string>();
-  for (const c of credits) {
-    const day = c.created_on ? new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date(c.created_on)) : "";
-    for (const contact of links.get(c.id) ?? []) {
-      const prev = since.get(contact);
-      if (prev === undefined || (day && (!prev || day < prev))) since.set(contact, day);
-    }
-  }
-  return since;
+// "Comissário desde": primeiro crédito do Programa Comissário; sem ele, o primeiro crédito do contato.
+export const PROGRAM_REASON = "Programa Comissário";
+export function sinceFromCredits(credits: Pick<HsCredit, "created_on" | "reason">[]): string | null {
+  const day = (ts: string) => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date(ts));
+  const dates = (l: typeof credits) => l.filter((c) => c.created_on).map((c) => day(c.created_on)).sort();
+  return dates(credits.filter((c) => c.reason === PROGRAM_REASON))[0] ?? dates(credits)[0] ?? null;
 }
 
 // Contato → IDs dos registros de Créditos associados

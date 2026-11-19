@@ -71,7 +71,7 @@ export async function requireCommissioner() {
 export async function loadAll() {
   const supabase = await createClient();
   const [cs, cats, entries, sync] = await Promise.all([
-    supabase.from("commissioners").select("*").order("name"),
+    supabase.from("commissioners").select("*").eq("in_program", true).order("name"),
     supabase.from("mile_categories").select("*"),
     supabase.from("credit_entries").select("*").order("created_on", { ascending: false }),
     supabase.from("sync_runs").select("ran_at, ok, message").eq("ok", true).order("ran_at", { ascending: false }).limit(1),

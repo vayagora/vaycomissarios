@@ -49,7 +49,14 @@ export default async function ComissarioPage({ params }: { params: Promise<{ id:
           </div>
         </div>
         <div className="row">
-          <InviteButton commissionerId={c.id} email={c.email} access={access} />
+          {c.in_program ? (
+            <InviteButton commissionerId={c.id} email={c.email} access={access} />
+          ) : (
+            <span className="row" style={{ gap: 6 }}>
+              <span className="badge yellow">Sem a marcação “Comissário” no HubSpot</span>
+              <Tip>Este contato não está mais marcado como comissário em “Condições Especiais”. Ele não aparece na lista e não acessa o portal. Categorias e termo continuam guardados.</Tip>
+            </span>
+          )}
           <a href={contactUrl(c.hubspot_contact_id)} target="_blank" rel="noreferrer" className="btn outline">
             <Icon name="external" size={18} />
             Abrir no HubSpot

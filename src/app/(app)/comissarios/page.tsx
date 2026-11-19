@@ -59,7 +59,7 @@ export default async function ComissariosPage() {
         </div>
         <div className="row">
           <SyncButton last={whenLabel(lastSync)} />
-          <Tip>Comissários vêm do HubSpot: todo contato com algum lançamento de Créditos com motivo “Programa Comissário”. Os novos aparecem na próxima sincronização.</Tip>
+          <Tip>Comissários vêm do HubSpot: contatos com “Comissário” marcado em “Condições Especiais”. Quem for marcado aparece na próxima sincronização; quem for desmarcado sai da lista e perde o acesso ao portal.</Tip>
         </div>
       </header>
 
