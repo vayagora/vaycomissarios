@@ -1,11 +1,11 @@
 import { SyncButton } from "@/components/SyncButton";
+import { Tip } from "@/components/ui";
 import { categoryStatus } from "@/lib/categories";
 import { loadAll, requireVay } from "@/lib/data";
 import { brl, dm, isoInSp, maskCpf, monthName, monthYear, plural, todayIso, whenLabel } from "@/lib/format";
 import { byCompany } from "@/lib/programs";
 import { signedAmount } from "@/lib/statement";
 import { CommissionersTable, type Row } from "./CommissionersTable";
-import { NewCommissioner } from "./NewCommissioner";
 
 export const metadata = { title: "Comissários" };
 
@@ -21,7 +21,7 @@ export default async function ComissariosPage() {
   const accIn = monthEntries.filter((e) => e.kind === "acumulo");
   const usedIn = monthEntries.filter((e) => e.kind === "uso");
   const sum = (l: typeof entries) => l.reduce((s, e) => s + e.amount, 0);
-  const newThisMonth = commissioners.filter((c) => c.created_at && isoInSp(c.created_at).startsWith(month)).length;
+  const newThisMonth = commissioners.filter((c) => c.since.startsWith(month)).length;
 
   const rows: Row[] = commissioners.map((c) => {
     const cats = byCompany(categories.filter((x) => x.commissioner_id === c.id))
@@ -59,7 +59,7 @@ export default async function ComissariosPage() {
         </div>
         <div className="row">
           <SyncButton last={whenLabel(lastSync)} />
-          <NewCommissioner />
+          <Tip>Comissários vêm do HubSpot: todo contato com algum lançamento de Créditos com motivo “Programa Comissário”. Os novos aparecem na próxima sincronização.</Tip>
         </div>
       </header>
 

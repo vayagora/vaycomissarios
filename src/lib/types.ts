@@ -14,7 +14,7 @@ export type Commissioner = TermLists & {
   id: string;
   name: string;
   email: string;
-  hubspot_contact_id: string | null;
+  hubspot_contact_id: string;
   cpf: string;
   since: string;
   balance: number;

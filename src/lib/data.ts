@@ -90,3 +90,17 @@ export async function lastSyncAt(): Promise<string | null> {
   const { data } = await supabase.from("sync_runs").select("ran_at").eq("ok", true).order("ran_at", { ascending: false }).limit(1);
   return (data?.[0]?.ran_at as string | undefined) ?? null;
 }
+
+// Acesso ao portal: existe usuário ligado ao comissário? (só a Vay lê os perfis de outros)
+export type PortalAccess = { email: string; since: string } | null;
+export async function portalAccess(commissionerId: string): Promise<PortalAccess> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("profiles")
+    .select("email, created_at")
+    .eq("commissioner_id", commissionerId)
+    .order("created_at", { ascending: false })
+    .limit(1);
+  const p = data?.[0];
+  return p ? { email: p.email as string, since: p.created_at as string } : null;
+}

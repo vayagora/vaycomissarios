@@ -70,7 +70,7 @@ describe.skipIf(!url)("RLS · regras de acesso", () => {
     await db.query(GRANTS);
 
     await db.query(`insert into auth.users (id, email) values ($1, 'vay@vayagora.com.br'), ($2, 'a@x.com'), ($3, 'b@x.com')`, [ID.vay, ID.ua, ID.ub]);
-    await db.query(`insert into commissioners (id, name, email, balance) values ($1, 'Ana', 'a@x.com', 100), ($2, 'Bruno', 'b@x.com', 200)`, [ID.ca, ID.cb]);
+    await db.query(`insert into commissioners (id, hubspot_contact_id, name, email, balance) values ($1, '1', 'Ana', 'a@x.com', 100), ($2, '2', 'Bruno', 'b@x.com', 200)`, [ID.ca, ID.cb]);
     await db.query(`update profiles set role = 'vay' where id = $1`, [ID.vay]);
     await db.query(`update profiles set commissioner_id = $2 where id = $1`, [ID.ua, ID.ca]);
     await db.query(`update profiles set commissioner_id = $2 where id = $1`, [ID.ub, ID.cb]);
@@ -111,7 +111,7 @@ describe.skipIf(!url)("RLS · regras de acesso", () => {
       as(ID.ua, async () => {
         expect(await count(`update commissioners set balance = 999999, term_can = '["tudo"]'`)).toBe(0);
         expect(await count(`update profiles set role = 'vay' where id = $1`, [ID.ua])).toBe(0);
-        await denied(`insert into commissioners (name, email) values ('X', 'x@x.com')`);
+        await denied(`insert into commissioners (hubspot_contact_id, name) values ('9', 'X')`);
       }));
 
     it("vê só os próprios lançamentos e não lança créditos", () =>

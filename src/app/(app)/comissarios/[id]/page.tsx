@@ -5,11 +5,12 @@ import { Statement } from "@/components/Statement";
 import { SyncButton } from "@/components/SyncButton";
 import { Avatar, Tip } from "@/components/ui";
 import { categoryStatus } from "@/lib/categories";
-import { lastSyncAt, loadCommissioner, requireVay } from "@/lib/data";
+import { lastSyncAt, loadCommissioner, portalAccess, requireVay } from "@/lib/data";
 import { brl, fmtDate, maskCpf, monthYear, todayIso, whenLabel } from "@/lib/format";
 import { contactUrl } from "@/lib/hubspot";
 import { byCompany } from "@/lib/programs";
 import { buildStatement, totals } from "@/lib/statement";
+import { InviteButton } from "./InviteButton";
 import { AssignButton, CategoriesProvider, CategoriesSection, type CatView } from "./Categories";
 import { TermEditor } from "./TermEditor";
 
@@ -21,7 +22,7 @@ export default async function ComissarioPage({ params }: { params: Promise<{ id:
   const { commissioner: c, categories, entries } = data;
   const today = todayIso();
   const t = totals(entries);
-  const last = await lastSyncAt();
+  const [last, access] = await Promise.all([lastSyncAt(), portalAccess(c.id)]);
   const syncedLabel = whenLabel(c.balance_synced_at ?? last);
 
   const cats: CatView[] = byCompany(categories).map((x) => {
@@ -48,14 +49,11 @@ export default async function ComissarioPage({ params }: { params: Promise<{ id:
           </div>
         </div>
         <div className="row">
-          {c.hubspot_contact_id ? (
-            <a href={contactUrl(c.hubspot_contact_id)} target="_blank" rel="noreferrer" className="btn outline">
-              <Icon name="external" size={18} />
-              Abrir no HubSpot
-            </a>
-          ) : (
-            <span className="badge yellow">Sem contato no HubSpot</span>
-          )}
+          <InviteButton commissionerId={c.id} email={c.email} access={access} />
+          <a href={contactUrl(c.hubspot_contact_id)} target="_blank" rel="noreferrer" className="btn outline">
+            <Icon name="external" size={18} />
+            Abrir no HubSpot
+          </a>
           <AssignButton />
         </div>
       </header>

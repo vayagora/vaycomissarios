@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readContact, readCredit } from "./hubspot";
+import { planCommissioners, readContact, readCredit } from "./hubspot";
 
 describe("HubSpot → extrato", () => {
   it("acúmulo usa [ACÚMULO] Valor creditado", () => {
@@ -41,5 +41,27 @@ describe("HubSpot → extrato", () => {
       balance: 4850,
     });
     expect(readContact("9", {}).balance).toBe(0);
+  });
+});
+
+describe("quem é comissário", () => {
+  it("contatos associados a créditos do Programa Comissário, desde o primeiro crédito (fuso de Brasília)", () => {
+    const credits = [
+      { id: "c1", created_on: "2026-10-04T12:00:00Z" },
+      { id: "c2", created_on: "2026-09-10T02:00:00Z" }, // 09/09 às 23h em Brasília
+      { id: "c3", created_on: "2026-11-04T12:00:00Z" },
+      { id: "c4", created_on: "2026-11-04T12:00:00Z" }, // sem contato associado
+    ];
+    const links = new Map([
+      ["c1", ["111"]],
+      ["c2", ["111"]],
+      ["c3", ["222", "333"]],
+    ]);
+    const since = planCommissioners(credits, links);
+    expect([...since.entries()].sort()).toEqual([
+      ["111", "2026-09-09"],
+      ["222", "2026-11-04"],
+      ["333", "2026-11-04"],
+    ]);
   });
 });

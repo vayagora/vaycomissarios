@@ -14,7 +14,7 @@ Este sistema segue a stack e os padrões do sistema de agências parceiras (`vay
 ## Regras que não podem ser quebradas
 1. **Créditos nunca são lançados pelo sistema.** Saldo = `creditos_abertos` do contato; extrato = registros do objeto Créditos (0-410). Só a sincronização grava `credit_entries` (service_role). Não existe política RLS de escrita nessa tabela.
 2. **Créditos nunca expiram.** Não exibir validade, vencimento ou "vence em breve" para créditos.
-3. **Não existe status de comissário.** Todo comissário cadastrado é ativo.
+3. **Comissários vêm do HubSpot, nunca de cadastro manual**: contato associado a algum registro de Créditos com motivo "Programa Comissário" (`searchProgramCredits`/`planCommissioners` em `src/lib/hubspot.ts`). A Vay só envia o convite de acesso. **Não existe status de comissário**: todo comissário é ativo.
 4. O comissário **não compra nem usa créditos pelo sistema** (pedidos só pelo WhatsApp do menu) e **não vê movimentações das contas de milhas**.
 5. O comissário só acessa os próprios dados (RLS). Toda tabela nova com dado de comissário precisa de política RLS + teste em `test/rls.test.ts`.
 6. Categorias de milha: uma por empresa por comissário (`unique`), validade obrigatória e futura (RLS), vigente até a data de validade inclusive (`src/lib/categories.ts`). O comissário só vê as vigentes (RLS em `mile_categories`). Empresas/categorias em `src/lib/programs.ts` e na restrição `company_tier` (mudou uma, mude a outra numa nova migração).

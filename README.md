@@ -9,8 +9,9 @@ Especificação: `docs/SPEC.md` (handoff do protótipo validado em 19/11/2026). 
 | Quem | O que vê e faz |
 |---|---|
 | **Comissário** | Início (saldo, parceria, categorias), Meus programas (categorias vigentes, benefícios, login e senha do programa guardados para consulta própria), Extrato e Meu termo de parceria. Só leitura, exceto os próprios dados de acesso. Pedidos de passagem pelo WhatsApp do menu. |
-| **Equipe Vay Agora** | Lista de comissários com KPIs, busca e filtros; cadastro (com convite por e-mail); no detalhe: atribuir, alterar, excluir e recadastrar categorias de milha; editar o termo; ver o extrato. Sincronizar com o HubSpot. |
+| **Equipe Vay Agora** | Lista de comissários (importados do HubSpot) com KPIs, busca e filtros; no detalhe: convidar para o portal, atribuir, alterar, excluir e recadastrar categorias de milha; editar o termo; ver o extrato. Sincronizar com o HubSpot. |
 
+- **Comissários vêm do HubSpot**: todo contato com algum lançamento de Créditos com motivo "Programa Comissário" é importado na sincronização, com saldo e extrato. A Vay não cadastra comissários; só envia o convite de acesso ao portal.
 - **Categorias de milha**: atribuídas à mão pela Vay, uma por empresa, com validade futura obrigatória. Vigentes até a data de validade (inclusive); no dia seguinte, encerram sozinhas: somem do portal e vão para "Encerradas" no painel.
 - **Senhas dos programas**: cifradas (AES-256-GCM) e legíveis só pelo próprio comissário. A equipe Vay não tem acesso a esse campo, nem pelo banco com o usuário dela.
 
@@ -56,7 +57,7 @@ Igual ao sistema de agências parceiras: **Next.js 15** (App Router, Server Acti
    ```sql
    update profiles set role = 'vay', full_name = 'Seu Nome' where email = 'seu-email@vayagora.com.br';
    ```
-3. Entre no sistema e cadastre os comissários pela tela **Comissários**. Cada cadastro envia o convite e liga o comissário ao contato do HubSpot com o mesmo e-mail.
+3. Entre no sistema, abra **Comissários** e clique em **Sincronizar com HubSpot**: os comissários são importados. Em cada um, **Convidar para o portal** envia o acesso para o e-mail do contato.
 
 Para dar acesso a outro colega da Vay, repita os passos 1 e 2 para ele.
 

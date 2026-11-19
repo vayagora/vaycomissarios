@@ -4,11 +4,18 @@ A sincronização (`src/lib/sync.ts`, cliente em `src/lib/hubspot.ts`) só **lê
 
 ## Quem é comissário
 
-A lista de comissários é a tabela `commissioners` do sistema (botão "Cadastrar comissário"). Cada comissário é ligado ao **contato** do HubSpot com o mesmo e-mail:
-- no cadastro, o sistema procura o contato pelo e-mail;
-- se não achar, a cada sincronização tenta de novo pelo e-mail (e avisa na mensagem de resultado).
+O sistema **importa** os comissários do HubSpot; a Vay não cadastra ninguém à mão.
 
-Assim, a propriedade "É comissário" no HubSpot (pendência do handoff) **não é necessária** para o sistema funcionar. Ela continua útil para listas e relatórios dentro do próprio HubSpot.
+**Comissário = contato associado a pelo menos um registro de Créditos com motivo (`motivo_do_credito`) "Programa Comissário".**
+
+- A sincronização busca todos esses registros (`/crm/v3/objects/0-410/search`), lê os contatos associados (`/crm/v4/associations/0-410/contacts/batch/read`) e cria no sistema os que ainda não existem.
+- "Comissário desde" = data do primeiro crédito do Programa Comissário do contato.
+- Nome, e-mail, CPF e saldo são atualizados a cada sincronização a partir do contato.
+- Para alguém entrar no programa, basta lançar o primeiro crédito com esse motivo e associá-lo ao contato. Atenção: um crédito "Programa Comissário" associado por engano a outro contato também torna esse contato comissário.
+- Comissário que deixa de ter créditos do programa não é apagado do sistema (o histórico fica).
+- O acesso ao portal é dado pela Vay no detalhe do comissário ("Convidar para o portal"), usando o e-mail do contato.
+
+Em 19/11/2026: 243 registros com esse motivo desde 09/09/2026; 70 créditos mensais em novembro.
 
 ## Contato (`contacts`)
 
@@ -38,7 +45,7 @@ Registro apagado ou desassociado no HubSpot some do extrato na próxima sincroni
 
 - Todo dia às 06:00 (Brasília), pelo Vercel Cron (`vercel.json` → `/api/cron/sync`, protegido por `CRON_SECRET`).
 - Botão "Sincronizar com HubSpot" na lista (todos) e no detalhe do comissário (só ele).
-- Ao cadastrar um comissário com contato encontrado.
+- Ao convidar um comissário não há sincronização: os dados já estão no sistema.
 
 ## App privado
 

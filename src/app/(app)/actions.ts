@@ -8,7 +8,6 @@ import { categoryStatus, validateUntil } from "@/lib/categories";
 import { encryptSecret } from "@/lib/crypto";
 import { requireSession, requireVay } from "@/lib/data";
 import { fmtDate, lower, todayIso } from "@/lib/format";
-import { findContactByEmail, hubspotConfig } from "@/lib/hubspot";
 import { COMPANIES, isValidTier } from "@/lib/programs";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { syncHubspot } from "@/lib/sync";
@@ -39,63 +38,41 @@ async function siteUrl() {
   return `${proto}://${host}`;
 }
 
-export async function createCommissioner(_: Result, f: FormData): Promise<Result & { id?: string }> {
+// Comissários vêm do HubSpot (sincronização); aqui só se dá acesso ao portal.
+// O e-mail do convite é o do contato no HubSpot.
+export async function inviteCommissioner(commissionerId: string): Promise<Result> {
   await requireVay();
-  const name = String(f.get("name") ?? "").trim();
-  const email = lower(String(f.get("email") ?? ""));
-  const since = String(f.get("since") ?? "") || todayIso();
-  if (!name) return { error: "Informe o nome do comissário." };
-  if (!isEmail(email)) return { error: "Informe um e-mail válido." };
-  if (!isIso(since)) return { error: "Data de início inválida." };
-
-  // Vincula ao contato do HubSpot pelo e-mail (de onde vêm saldo, CPF e extrato)
-  let contactId: string | null = null;
-  let cpf = "";
-  const cfg = hubspotConfig();
-  if (cfg) {
-    try {
-      const c = await findContactByEmail(cfg, email);
-      if (c) {
-        contactId = c.id;
-        cpf = c.cpf;
-      }
-    } catch {
-      // Sem HubSpot agora: a próxima sincronização tenta de novo pelo e-mail
-    }
-  }
-
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("commissioners")
-    .insert({ name, email, since, hubspot_contact_id: contactId, cpf })
-    .select("id")
-    .single();
-  if (error || !data) {
-    if (error?.code === "23505") return { error: "Já existe um comissário com esse e-mail ou contato do HubSpot." };
-    return { error: "Não foi possível cadastrar o comissário." };
+  const { data: c } = await supabase.from("commissioners").select("id, name, email").eq("id", commissionerId).single();
+  if (!c) return { error: "Comissário não encontrado." };
+  const email = lower(c.email);
+  if (!isEmail(email)) return { error: "O contato não tem e-mail válido no HubSpot. Corrija lá e sincronize." };
+
+  const admin = createAdminClient();
+  // Já tem usuário com esse e-mail (ex.: convite anterior): só liga ao comissário e reenvia o link
+  const { data: existing } = await admin.from("profiles").select("id, role").eq("email", email).maybeSingle();
+  if (existing?.role === "vay") return { error: "Esse e-mail é de um usuário da equipe Vay." };
+  if (existing) {
+    const { error } = await admin.from("profiles").update({ role: "comissario", commissioner_id: c.id }).eq("id", existing.id);
+    if (error) return { error: "Não foi possível ligar o acesso existente." };
+    await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${await siteUrl()}/auth/confirm?next=/definir-senha` });
+    revalidatePath("/", "layout");
+    return { ok: `${firstName(c.name)} já tinha acesso. Enviamos um link para criar uma nova senha em ${email}.` };
   }
 
-  // Convite de acesso. O papel é gravado pelo servidor, nunca a partir de metadados do usuário.
-  const admin = createAdminClient();
   const inv = await admin.auth.admin.inviteUserByEmail(email, {
-    data: { full_name: name },
+    data: { full_name: c.name },
     redirectTo: `${await siteUrl()}/auth/confirm?next=/definir-senha`,
   });
-  let inviteError = inv.error?.message ?? (inv.data.user ? null : "convite não criado");
-  if (!inviteError && inv.data.user) {
-    const { error: pErr } = await admin
-      .from("profiles")
-      .update({ role: "comissario", commissioner_id: data.id, full_name: name })
-      .eq("id", inv.data.user.id);
-    inviteError = pErr?.message ?? null;
-  }
-
-  if (contactId) await syncHubspot(admin, data.id);
+  if (inv.error || !inv.data.user) return { error: `Não foi possível convidar: ${inv.error?.message ?? "convite não criado"}` };
+  // O papel é gravado pelo servidor, nunca a partir de metadados do usuário.
+  const { error: pErr } = await admin
+    .from("profiles")
+    .update({ role: "comissario", commissioner_id: c.id, full_name: c.name })
+    .eq("id", inv.data.user.id);
+  if (pErr) return { error: `Convite enviado, mas não foi possível ligar o acesso: ${pErr.message}` };
   revalidatePath("/", "layout");
-
-  const hs = contactId ? "Contato do HubSpot vinculado." : "Contato não encontrado no HubSpot pelo e-mail: saldo e extrato ficam zerados até o vínculo.";
-  if (inviteError) return { id: data.id, ok: `${name} cadastrado, mas o convite falhou (${inviteError}). ${hs}` };
-  return { id: data.id, ok: `${name} cadastrado. Convite enviado para ${email}. ${hs}` };
+  return { ok: `Convite enviado para ${email}.` };
 }
 
 // ---------------------------------------------------------------- Categorias de milha

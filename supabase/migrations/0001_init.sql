@@ -7,15 +7,18 @@ create extension if not exists pgcrypto;
 -- Tabelas
 -- ---------------------------------------------------------------
 
--- Comissário. Não existe status: todo comissário cadastrado é ativo.
+-- Comissário, importado do HubSpot pela sincronização (a Vay não cadastra à mão).
+-- Comissário = contato associado a algum registro de Créditos com motivo "Programa Comissário".
+-- Não existe status: todo comissário é ativo.
 create table public.commissioners (
   id                 uuid primary key default gen_random_uuid(),
-  name               text not null,
-  email              text not null unique,
-  -- Contato no HubSpot (saldo, CPF e extrato vêm de lá)
-  hubspot_contact_id text unique,
+  -- Contato no HubSpot (nome, e-mail, CPF, saldo e extrato vêm de lá)
+  hubspot_contact_id text not null unique,
+  name               text not null default '',
+  email              text not null default '',
   -- CPF como está no HubSpot; a tela sempre mostra mascarado
   cpf                text not null default '',
+  -- Data do primeiro crédito do Programa Comissário
   since              date not null default current_date,
   -- "Saldo atual em créditos" (creditos_abertos) na última sincronização
   balance            numeric(12, 2) not null default 0,

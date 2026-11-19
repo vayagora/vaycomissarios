@@ -110,7 +110,7 @@ export function CommissionersTable({ rows }: { rows: Row[] }) {
           </tbody>
         </table>
         {!shown.length ? (
-          <p className="empty">{rows.length ? "Nenhum comissário encontrado com esse filtro." : "Nenhum comissário cadastrado ainda."}</p>
+          <p className="empty">{rows.length ? "Nenhum comissário encontrado com esse filtro." : "Nenhum comissário ainda. Sincronize com o HubSpot para importar."}</p>
         ) : null}
       </div>
       <p className="small muted" style={{ padding: "14px 24px" }}>
