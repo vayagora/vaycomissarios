@@ -33,7 +33,7 @@ export async function setPassword(_: FormState, form: FormData): Promise<FormSta
   } = await supabase.auth.getUser();
   if (!user) return { error: "Sua sessão expirou. Entre de novo." };
   const { error } = await supabase.auth.updateUser({ password });
-  if (error) return { error: error.message.includes("different") ? "Escolha uma senha diferente da provisória." : "Não foi possível salvar a senha." };
+  if (error) return { error: error.message.includes("different") ? "Escolha uma senha diferente da inicial." : "Não foi possível salvar a senha." };
   // O perfil só é alterado pelo servidor (RLS): limpa a marcação de senha provisória
   await createAdminClient().from("profiles").update({ must_change_password: false }).eq("id", user.id);
   redirect("/");

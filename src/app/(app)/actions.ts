@@ -4,7 +4,7 @@
 // lançamentos; o sistema apenas lê (sincronização).
 import { revalidatePath } from "next/cache";
 import { categoryStatus, validateUntil } from "@/lib/categories";
-import { encryptSecret, tempPassword } from "@/lib/crypto";
+import { encryptSecret, initialPassword } from "@/lib/crypto";
 import { requireSession, requireVay } from "@/lib/data";
 import { fmtDate, lower, todayIso } from "@/lib/format";
 import { COMPANIES, isValidTier } from "@/lib/programs";
@@ -29,28 +29,26 @@ export async function syncNow(commissionerId?: string): Promise<Result> {
 
 // ---------------------------------------------------------------- Comissários
 
-// Comissários vêm do HubSpot (sincronização); aqui só se dá acesso ao portal.
-// Sem e-mail: o login é o e-mail do contato no HubSpot e a senha provisória é mostrada uma única vez
-// para a Vay mandar pelo WhatsApp. No primeiro acesso, o comissário é obrigado a trocá-la.
-// Chamar de novo gera outra senha provisória (o comissário que esqueceu a senha).
-export async function createPortalAccess(commissionerId: string): Promise<Result & { email?: string; password?: string }> {
-  await requireVay();
-  const supabase = await createClient();
-  const { data: c } = await supabase.from("commissioners").select("id, name, email, in_program").eq("id", commissionerId).single();
-  if (!c) return { error: "Comissário não encontrado." };
+// Comissários vêm do HubSpot (sincronização); aqui só se dá acesso ao portal. Sem e-mail:
+// login = e-mail do contato no HubSpot; senha inicial = primeiro nome + "123" (initialPassword),
+// mandada pelo WhatsApp. Por ser previsível, a troca no primeiro acesso é obrigatória.
+// Chamar de novo para quem já tem acesso volta a senha para a inicial (comissário que esqueceu).
+
+type AccessRow = { id: string; name: string; email: string; in_program: boolean };
+type AccessOut = { error?: string; created?: boolean; email?: string; password?: string };
+
+async function grantAccess(admin: ReturnType<typeof createAdminClient>, c: AccessRow): Promise<AccessOut> {
   if (!c.in_program) return { error: "Sem a marcação “Comissário” no HubSpot: não pode ter acesso." };
   const email = lower(c.email);
   if (!isEmail(email)) return { error: "O contato não tem e-mail válido no HubSpot. Corrija lá e sincronize." };
-
-  const admin = createAdminClient();
-  const password = tempPassword();
+  const password = initialPassword(c.name);
   const { data: existing } = await admin.from("profiles").select("id, role").eq("email", email).maybeSingle();
   if (existing?.role === "vay") return { error: "Esse e-mail é de um usuário da equipe Vay." };
 
   let userId = existing?.id as string | undefined;
   if (userId) {
     const { error } = await admin.auth.admin.updateUserById(userId, { password });
-    if (error) return { error: `Não foi possível gerar a nova senha: ${error.message}` };
+    if (error) return { error: `Não foi possível redefinir a senha: ${error.message}` };
   } else {
     const { data, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { full_name: c.name } });
     if (error || !data.user) return { error: `Não foi possível criar o acesso: ${error?.message ?? "usuário não criado"}` };
@@ -62,8 +60,42 @@ export async function createPortalAccess(commissionerId: string): Promise<Result
     .update({ role: "comissario", commissioner_id: c.id, full_name: c.name, must_change_password: true })
     .eq("id", userId);
   if (pErr) return { error: `Acesso criado, mas não foi possível ligá-lo ao comissário: ${pErr.message}` };
+  return { created: !existing, email, password };
+}
+
+export async function createPortalAccess(commissionerId: string): Promise<Result & { email?: string; password?: string }> {
+  await requireVay();
+  const supabase = await createClient();
+  const { data: c } = await supabase.from("commissioners").select("id, name, email, in_program").eq("id", commissionerId).single<AccessRow>();
+  if (!c) return { error: "Comissário não encontrado." };
+  const r = await grantAccess(createAdminClient(), c);
+  if (r.error) return { error: r.error };
   revalidatePath("/", "layout");
-  return { ok: existing ? "Nova senha provisória gerada." : "Acesso criado.", email, password };
+  return { ok: r.created ? "Acesso criado." : "Senha voltou para a inicial.", email: r.email, password: r.password };
+}
+
+// Cria o acesso de todos os comissários que ainda não têm (não mexe em quem já tem).
+export async function createPendingAccesses(): Promise<Result> {
+  await requireVay();
+  const admin = createAdminClient();
+  const [{ data: cs, error }, { data: linked }] = await Promise.all([
+    admin.from("commissioners").select("id, name, email, in_program").eq("in_program", true),
+    admin.from("profiles").select("commissioner_id").not("commissioner_id", "is", null),
+  ]);
+  if (error) return { error: "Não foi possível ler os comissários." };
+  const has = new Set((linked ?? []).map((p) => p.commissioner_id as string));
+  const pending = ((cs ?? []) as AccessRow[]).filter((c) => !has.has(c.id));
+  if (!pending.length) return { ok: "Todos os comissários já têm acesso." };
+  let created = 0;
+  const failed: string[] = [];
+  for (const c of pending) {
+    const r = await grantAccess(admin, c);
+    if (r.error) failed.push(`${c.name || c.email} (${r.error})`);
+    else created++;
+  }
+  revalidatePath("/", "layout");
+  const ok = `${created} ${created === 1 ? "acesso criado" : "acessos criados"}. Login: e-mail do HubSpot; senha: primeiro nome + 123.`;
+  return failed.length ? { error: `${ok} Não foi possível para: ${failed.join("; ")}` } : { ok };
 }
 
 // ---------------------------------------------------------------- Categorias de milha

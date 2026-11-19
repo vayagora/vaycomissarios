@@ -70,18 +70,20 @@ export async function requireCommissioner() {
 
 export async function loadAll() {
   const supabase = await createClient();
-  const [cs, cats, entries, sync] = await Promise.all([
+  const [cs, cats, entries, sync, linked] = await Promise.all([
     supabase.from("commissioners").select("*").eq("in_program", true).order("name"),
     supabase.from("mile_categories").select("*"),
     supabase.from("credit_entries").select("*").order("created_on", { ascending: false }),
     supabase.from("sync_runs").select("ran_at, ok, message").eq("ok", true).order("ran_at", { ascending: false }).limit(1),
+    supabase.from("profiles").select("commissioner_id").not("commissioner_id", "is", null),
   ]);
-  for (const r of [cs, cats, entries, sync]) if (r.error) throw new Error(r.error.message);
+  for (const r of [cs, cats, entries, sync, linked]) if (r.error) throw new Error(r.error.message);
   return {
     commissioners: ((cs.data ?? []) as Commissioner[]).map(normCommissioner),
     categories: (cats.data ?? []) as MileCategory[],
     entries: ((entries.data ?? []) as CreditEntry[]).map(normEntry),
     lastSync: (sync.data?.[0]?.ran_at as string | undefined) ?? null,
+    withAccess: new Set((linked.data ?? []).map((p) => p.commissioner_id as string)),
   };
 }
 

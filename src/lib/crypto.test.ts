@@ -39,3 +39,14 @@ describe("senha provisória", () => {
     expect(new Set(Array.from({ length: 50 }, () => tempPassword())).size).toBe(50);
   });
 });
+
+describe("senha inicial", () => {
+  it("primeiro nome minúsculo, sem acento, + 123", async () => {
+    const { initialPassword } = await import("./crypto");
+    expect(initialPassword("Gabriel Zaidan Guimaraes")).toBe("gabriel123");
+    expect(initialPassword("Flávia De Oliveira")).toBe("flavia123");
+    expect(initialPassword("  Marco Aurelio  Faleiro")).toBe("marco123");
+    expect(initialPassword("Ana")).toBe("ana123");
+    expect(initialPassword("")).toMatch(/^[A-Za-z2-9]{12}$/);
+  });
+});

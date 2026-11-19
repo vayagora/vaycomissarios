@@ -39,3 +39,11 @@ export function tempPassword(length = 12): string {
   }
   return out.join("");
 }
+
+// Senha inicial padrão combinada com a Vay: primeiro nome, minúsculo e sem acento, + "123"
+// ("Flávia Ruas" → "flavia123"). É previsível: por isso a troca no primeiro acesso é obrigatória.
+export function initialPassword(name: string): string {
+  const first = name.trim().split(/\s+/)[0] ?? "";
+  const clean = first.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z]/g, "");
+  return clean ? `${clean}123` : tempPassword();
+}

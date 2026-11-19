@@ -1,6 +1,6 @@
 "use client";
 
-// Acesso ao portal sem e-mail: a Vay cria o login e manda a senha provisória pelo WhatsApp.
+// Acesso ao portal sem e-mail: login = e-mail do HubSpot, senha inicial = primeiro nome + 123.
 import { useState, useTransition } from "react";
 import { Icon } from "@/components/Icon";
 import { useToastResult } from "@/components/Toast";
@@ -28,7 +28,7 @@ export function AccessButton({ commissionerId, name, email, access }: { commissi
     });
 
   const message = shown
-    ? `Olá, ${first}! Seu acesso ao Portal do Comissário da Vay Agora:\n${typeof window !== "undefined" ? window.location.origin : ""}\nLogin: ${shown.email}\nSenha provisória: ${shown.password}\nNo primeiro acesso, você cria a sua própria senha.`
+    ? `Olá, ${first}! Seu acesso ao Portal do Comissário da Vay Agora:\n${typeof window !== "undefined" ? window.location.origin : ""}\nLogin: ${shown.email}\nSenha inicial: ${shown.password}\nNo primeiro acesso, você cria a sua própria senha.`
     : "";
 
   return (
@@ -40,7 +40,7 @@ export function AccessButton({ commissionerId, name, email, access }: { commissi
           </Badge>
           <Tip>{`Login ${access.email}, criado em ${fmtDate(access.since)}.`}</Tip>
           <button type="button" className="linkbtn" disabled={pending} onClick={() => setConfirm(true)}>
-            Gerar nova senha
+            Voltar à senha inicial
           </button>
         </span>
       ) : (
@@ -53,15 +53,15 @@ export function AccessButton({ commissionerId, name, email, access }: { commissi
         <div className="overlay" onClick={(e) => e.target === e.currentTarget && setConfirm(false)} onKeyDown={(e) => e.key === "Escape" && setConfirm(false)}>
           <div className="dialog" role="alertdialog" aria-modal="true" aria-labelledby="pw-title">
             <div className="head">
-              <h2 id="pw-title">Gerar nova senha?</h2>
+              <h2 id="pw-title">Voltar à senha inicial?</h2>
             </div>
-            <p>A senha atual de {name} deixa de funcionar. Mande a nova pelo WhatsApp; no próximo acesso, {first} cria a própria senha.</p>
+            <p>A senha atual de {name} deixa de funcionar e volta a ser a inicial (primeiro nome + 123). No próximo acesso, {first} cria a própria senha de novo.</p>
             <div className="foot">
               <button type="button" className="btn ghost" onClick={() => setConfirm(false)} autoFocus>
                 Cancelar
               </button>
               <button type="button" className="btn primary" disabled={pending} onClick={run}>
-                {pending ? "Gerando…" : "Gerar nova senha"}
+                {pending ? "Salvando…" : "Voltar à senha inicial"}
               </button>
             </div>
           </div>
@@ -74,7 +74,7 @@ export function AccessButton({ commissionerId, name, email, access }: { commissi
             <div className="head">
               <div className="stack" style={{ gap: 4 }}>
                 <h2 id="sent-title">Acesso de {first}</h2>
-                <p className="muted small">A senha provisória aparece só agora. Copie e mande pelo WhatsApp.</p>
+                <p className="muted small">Mande pelo WhatsApp. No primeiro acesso, {first} cria a própria senha.</p>
               </div>
               <button type="button" className="x" aria-label="Fechar" onClick={() => setShown(null)}>
                 <Icon name="x" />
@@ -88,7 +88,7 @@ export function AccessButton({ commissionerId, name, email, access }: { commissi
                 </dd>
               </div>
               <div>
-                <dt>Senha provisória</dt>
+                <dt>Senha inicial</dt>
                 <dd style={{ margin: 0 }}>
                   <strong style={{ fontFamily: "var(--font-mono)", fontSize: 18, letterSpacing: ".04em" }}>{shown.password}</strong>
                 </dd>

@@ -5,6 +5,7 @@ import { loadAll, requireVay } from "@/lib/data";
 import { brl, dm, isoInSp, maskCpf, monthName, monthYear, plural, todayIso, whenLabel } from "@/lib/format";
 import { byCompany } from "@/lib/programs";
 import { signedAmount } from "@/lib/statement";
+import { BulkAccessButton } from "./BulkAccessButton";
 import { CommissionersTable, type Row } from "./CommissionersTable";
 
 export const metadata = { title: "Comissários" };
@@ -13,7 +14,8 @@ const shortCompany = (c: string) => c.replace(" Pass", "").replace(" Fidelidade"
 
 export default async function ComissariosPage() {
   await requireVay();
-  const { commissioners, categories, entries, lastSync } = await loadAll();
+  const { commissioners, categories, entries, lastSync, withAccess } = await loadAll();
+  const pendingAccess = commissioners.filter((c) => !withAccess.has(c.id)).length;
   const today = todayIso();
   const month = today.slice(0, 7);
 
@@ -59,6 +61,7 @@ export default async function ComissariosPage() {
         </div>
         <div className="row">
           <SyncButton last={whenLabel(lastSync)} />
+          {pendingAccess ? <BulkAccessButton pending={pendingAccess} /> : null}
           <Tip>Comissários vêm do HubSpot: contatos com “Comissário” marcado em “Condições Especiais”. Quem for marcado aparece na próxima sincronização; quem for desmarcado sai da lista e perde o acesso ao portal.</Tip>
         </div>
       </header>

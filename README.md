@@ -58,9 +58,11 @@ O sistema **não envia e-mails**: não é preciso configurar SMTP nem modelos de
 
 ### 5. Acesso dos comissários (sem e-mail)
 
-No detalhe de cada comissário, **Criar acesso ao portal** cria o login (o e-mail do contato no HubSpot) e mostra uma **senha provisória uma única vez**, com um botão para copiar a mensagem pronta para o WhatsApp. No primeiro acesso, o comissário é obrigado a criar a própria senha. Esqueceu a senha? O comissário fala com a Vay no WhatsApp e a Vay usa **Gerar nova senha** no mesmo lugar.
-
-Para dar acesso a outro colega da Vay, repita os passos 1 e 2 para ele.
+- **Login:** o e-mail do contato no HubSpot. **Senha inicial:** primeiro nome, minúsculo e sem acento, + `123` (ex.: Gabriel Zaidan → `gabriel123`).
+- Na lista de comissários, **Criar acessos (N)** cria de uma vez o acesso de quem ainda não tem. No detalhe de cada um, **Criar acesso ao portal** faz o mesmo para uma pessoa e mostra a mensagem pronta para o WhatsApp.
+- No primeiro acesso, o comissário é **obrigado** a criar a própria senha (a inicial é previsível).
+- Esqueceu a senha? O comissário fala com a Vay no WhatsApp e a Vay usa **Voltar à senha inicial** no detalhe dele.
+- A equipe Vay usa outro login (e-mail da Vay). Uma pessoa pode ter os dois: o admin e o de comissário, com o e-mail do HubSpot.
 
 ## Rodando no computador
 
