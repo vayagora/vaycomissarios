@@ -12,6 +12,7 @@ const SUPABASE_STUB = `
 do $$ begin
   if not exists (select 1 from pg_roles where rolname = 'authenticated') then create role authenticated nologin; end if;
   if not exists (select 1 from pg_roles where rolname = 'anon') then create role anon nologin; end if;
+  if not exists (select 1 from pg_roles where rolname = 'service_role') then create role service_role nologin bypassrls; end if;
 end $$;
 create schema if not exists auth;
 create table if not exists auth.users (id uuid primary key, email text, raw_user_meta_data jsonb default '{}'::jsonb);
@@ -22,10 +23,7 @@ grant usage on schema auth to authenticated, anon;
 grant execute on function auth.uid() to authenticated, anon;
 `;
 
-const GRANTS = `
-grant usage on schema public to authenticated, anon;
-grant select, insert, update, delete on all tables in schema public to authenticated;
-`;
+// Sem permissões extras: como num projeto novo do Supabase, quem concede é a migração 0003.
 
 const ID = {
   vay: "10000000-0000-0000-0000-000000000001",
@@ -67,7 +65,6 @@ describe.skipIf(!url)("RLS · regras de acesso", () => {
     await db.query("drop schema if exists public cascade; create schema public;");
     await db.query(SUPABASE_STUB);
     for (const f of fs.readdirSync(MIG).filter((x) => x.endsWith(".sql")).sort()) await db.query(fs.readFileSync(path.join(MIG, f), "utf8"));
-    await db.query(GRANTS);
 
     await db.query(`insert into auth.users (id, email) values ($1, 'vay@vayagora.com.br'), ($2, 'a@x.com'), ($3, 'b@x.com')`, [ID.vay, ID.ua, ID.ub]);
     await db.query(`insert into commissioners (id, hubspot_contact_id, name, email, balance) values ($1, '1', 'Ana', 'a@x.com', 100), ($2, '2', 'Bruno', 'b@x.com', 200)`, [ID.ca, ID.cb]);
