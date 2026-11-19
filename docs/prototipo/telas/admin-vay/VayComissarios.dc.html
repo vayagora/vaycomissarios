@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Comissários — Painel interno Vay Agora</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/vayagorav1_0fc08b/styles.css">
+<link rel="stylesheet" href="ds/vayagorav1_0fc08b/tokens/fonts.css">
+<link rel="stylesheet" href="ds/vayagorav1_0fc08b/tokens/colors.css">
+<link rel="stylesheet" href="ds/vayagorav1_0fc08b/tokens/typography.css">
+<link rel="stylesheet" href="ds/vayagorav1_0fc08b/tokens/spacing.css">
+<link rel="stylesheet" href="ds/vayagorav1_0fc08b/tokens/base.css">
+<script src="ds/vayagorav1_0fc08b/_ds_bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;background:#F8F8FA}
+a{color:#5B45B2}a:hover{color:#473690}
+.va-tip{position:relative;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;flex:none;padding:0;border:1.5px solid var(--border-default);border-radius:999px;background:#fff;color:var(--text-muted);font-family:var(--font-sans);font-size:12px;font-weight:700;line-height:1;cursor:help}
+.va-tip::before{content:"";position:absolute;inset:-11px}
+.va-tip:hover,.va-tip:focus-visible{border-color:var(--color-primary);color:var(--purple-700)}
+.va-tipbox{display:none;position:absolute;right:-8px;top:calc(100% + 10px);z-index:900;width:max-content;max-width:min(300px,80vw);padding:10px 12px;border-radius:10px;background:var(--neutral-900);color:#fff;font-size:13px;font-weight:400;line-height:1.45;text-align:left;white-space:normal;box-shadow:var(--shadow-md);pointer-events:none}
+.va-tip:hover .va-tipbox,.va-tip:focus .va-tipbox{display:block}
+</style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; min-height: 100vh; background: var(--surface-sunken); font-family: var(--font-sans); color: var(--text-body);">
+
+  <nav aria-label="Menu do painel" style="flex: 1 1 240px; max-width: 100%; box-sizing: border-box; background: var(--surface-inverse); color: var(--neutral-200); padding: 28px 20px; display: flex; flex-direction: column; gap: 32px;">
+    <div style="display: flex; flex-direction: column; gap: 6px; padding: 0 8px;">
+      <img src="ds/vayagorav1_0fc08b/assets/logos/logo-tipografico-porcelana.png" alt="Vay Agora" style="width: 148px; height: auto;">
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--bluebell-300);">Painel interno</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <a href="VayComissarios.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 14px; border-radius: 12px; background: rgba(255,255,255,0.10); color: #FFFFFF; font-weight: 600; font-size: 15px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path></svg>Comissários</a>
+      <a href="#relatorios" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 14px; border-radius: 12px; color: var(--neutral-200); font-weight: 500; font-size: 15px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"></path><path d="M18 17V9M13 17V5M8 17v-3"></path></svg>Relatórios de créditos</a>
+    </div>
+    <div style="margin-top: auto; display: flex; align-items: center; gap: 12px; padding: 12px 8px; border-top: 1px solid rgba(255,255,255,0.12);">
+      <x-import component-from-global-scope="VayAgoraV1_0fc08b.Avatar" name="Gabriel Zaidan" size="sm"></x-import>
+      <div style="display: flex; flex-direction: column; line-height: 1.3;">
+        <span style="font-size: 14px; font-weight: 600; color: #FFFFFF;">Gabriel Zaidan</span>
+        <span style="font-size: 12px; color: var(--neutral-400);">Equipe Vay Agora</span>
+      </div>
+    </div>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px clamp(20px, 4vw, 56px) 64px;">
+    <div style="max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px;">
+
+      <header style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px;">
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted);">Gestão de comissários</span>
+          <h1 style="font-family: var(--font-display); font-weight: 700; letter-spacing: -0.02em; font-size: 40px; line-height: 1.1; color: var(--text-strong);">Comissários</h1>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <x-import component-from-global-scope="VayAgoraV1_0fc08b.Button" variant="outline" on-click="{{syncHubspot}}">Sincronizar com HubSpot</x-import>
+            <button type="button" class="va-tip" aria-label="Última sincronização: {{lastSync}}">i<span class="va-tipbox" role="tooltip">Última sincronização: {{lastSync}}</span></button>
+          </div>
+          <x-import component-from-global-scope="VayAgoraV1_0fc08b.Button" variant="secondary">Cadastrar comissário</x-import>
+        </div>
+      </header>
+
+      <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 16px;">
+        <div style="background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 14px; color: var(--text-muted);">Comissários</span>
+          <strong style="font-family: var(--font-display); font-size: 36px; letter-spacing: -0.02em; line-height: 1.1; color: var(--text-strong);">38</strong>
+          <span style="font-size: 13px; color: var(--text-muted);">2 novos em novembro</span>
+        </div>
+        <div style="background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 14px; color: var(--text-muted);">Saldo total em créditos</span>
+          <strong style="font-family: var(--font-display); font-size: 36px; letter-spacing: -0.02em; line-height: 1.1; color: var(--purple-600);">R$ 96.420</strong>
+          <span style="font-size: 13px; color: var(--text-muted);">Obrigação em aberto da Vay Agora</span>
+        </div>
+        <div style="background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 14px; color: var(--text-muted);">Créditos acumulados em novembro</span>
+          <strong style="font-family: var(--font-display); font-size: 36px; letter-spacing: -0.02em; line-height: 1.1; color: #1F8A5B;">+ R$ 5.640</strong>
+          <span style="font-size: 13px; color: var(--text-muted);">27 lançamentos no HubSpot</span>
+        </div>
+        <div style="background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 14px; color: var(--text-muted);">Créditos usados em novembro</span>
+          <strong style="font-family: var(--font-display); font-size: 36px; letter-spacing: -0.02em; line-height: 1.1; color: var(--text-strong);">− R$ 7.180</strong>
+          <span style="font-size: 13px; color: var(--text-muted);">5 lançamentos de uso no HubSpot</span>
+        </div>
+      </section>
+
+      <section style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px;">
+          <x-import component-from-global-scope="VayAgoraV1_0fc08b.Input" label="Buscar comissário" placeholder="Nome ou CPF" value="{{query}}" on-change="{{onSearch}}" style="flex: 1 1 320px; max-width: 420px;"></x-import>
+          <div role="group" aria-label="Filtrar comissários" style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <sc-for list="{{filters}}" as="f" hint-placeholder-count="3">
+              <x-import component-from-global-scope="VayAgoraV1_0fc08b.Tag" selected="{{f.sel}}" on-click="{{f.pick}}">{{f.label}}</x-import>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: 18px; overflow-x: auto;">
+          <table style="width: 100%; min-width: 960px; border-collapse: collapse; font-size: 15px;">
+            <thead>
+              <tr style="text-align: left; color: var(--text-muted); font-size: 13px;">
+                <th style="padding: 14px 20px; font-weight: 600; border-bottom: 1px solid var(--border-subtle);">Comissário</th>
+                <th style="padding: 14px 20px; font-weight: 600; border-bottom: 1px solid var(--border-subtle);">Categorias vigentes</th>
+                <th style="padding: 14px 20px; font-weight: 600; border-bottom: 1px solid var(--border-subtle);">Última movimentação</th>
+                <th style="padding: 14px 20px; font-weight: 600; border-bottom: 1px solid var(--border-subtle); text-align: right;">Saldo em créditos</th>
+                <th style="padding: 14px 20px; font-weight: 600; border-bottom: 1px solid var(--border-subtle); text-align: right;"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Ações</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{rows}}" as="c" hint-placeholder-count="8">
+                <tr>
+                  <td style="padding: 14px 20px; border-bottom: 1px solid var(--border-subtle);">
+                    <a href="VayComissarioDetalhe.dc.html" style="display: flex; align-items: center; gap: 12px; color: var(--text-body);">
+                      <x-import component-from-global-scope="VayAgoraV1_0fc08b.Avatar" name="{{c.name}}" size="sm"></x-import>
+                      <span style="display: flex; flex-direction: column; line-height: 1.35;">
+                        <span style="font-weight: 600; color: var(--text-strong);">{{c.name}}</span>
+                        <span style="font-size: 13px; color: var(--text-muted);">CPF {{c.cpf}} · desde {{c.since}}</span>
+                      </span>
+                    </a>
+                  </td>
+                  <td style="padding: 14px 20px; border-bottom: 1px solid var(--border-subtle);">
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                      <sc-for list="{{c.programs}}" as="p" hint-placeholder-count="2">
+                        <span style="display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: {{p.bg}}; color: {{p.color}};">{{p.label}}</span>
+                      </sc-for>
+                    </div>
+                  </td>
+                  <td style="padding: 14px 20px; border-bottom: 1px solid var(--border-subtle);">
+                    <span style="display: flex; flex-direction: column; line-height: 1.35;">
+                      <span style="font-weight: 600; color: {{c.lastColor}};">{{c.last}}</span>
+                      <span style="font-size: 13px; color: var(--text-muted);">{{c.lastSub}}</span>
+                    </span>
+                  </td>
+                  <td style="padding: 14px 20px; border-bottom: 1px solid var(--border-subtle); text-align: right; white-space: nowrap;">
+                    <strong style="font-family: var(--font-display); font-size: 20px; letter-spacing: -0.01em; color: var(--text-strong);">{{c.balance}}</strong>
+                  </td>
+                  <td style="padding: 14px 20px; border-bottom: 1px solid var(--border-subtle); text-align: right; white-space: nowrap;">
+                    <a href="VayComissarioDetalhe.dc.html" style="display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 16px; border-radius: 999px; background: var(--color-primary-soft); color: var(--purple-700); font-weight: 600; font-size: 14px;">Ver comissário</a>
+                  </td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <sc-if value="{{empty}}" hint-placeholder-val="{{false}}">
+            <p style="padding: 32px 20px; text-align: center; color: var(--text-muted);">Nenhum comissário encontrado com esse filtro.</p>
+          </sc-if>
+        </div>
+        <span style="font-size: 13px; color: var(--text-muted);">Mostrando {{count}} de 38 comissários · saldos conforme a última sincronização com o HubSpot</span>
+      </section>
+    </div>
+  </main>
+</div>
+<sc-if value="{{hasToast}}" hint-placeholder-val="{{false}}">
+  <div role="status" style="position: fixed; top: 20px; right: 20px; z-index: 1200; max-width: min(440px, calc(100vw - 40px)); padding: 14px 18px; border-radius: var(--radius-md); background: var(--neutral-900); color: #fff; font-size: 15px; box-shadow: var(--shadow-lg);">{{toast}}</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1280}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { filter: 'all', query: '', lastSync: 'hoje às 19:00', toast: '' };
+  }
+  flash(msg) {
+    if (this._t) clearTimeout(this._t);
+    this.setState({ toast: msg });
+    this._t = setTimeout(() => this.setState({ toast: '' }), 3200);
+  }
+  componentWillUnmount() { if (this._t) clearTimeout(this._t); }
+  renderVals() {
+    const P = (label, warn) => ({ label, bg: warn ? '#FCF4CC' : '#F2EFFB', color: warn ? '#8A7826' : '#473690', warn: !!warn });
+    const fmt = (n) => 'R$ ' + n.toLocaleString('pt-BR');
+    const all = [
+      { name: 'Mariana Costa', cpf: '•••.482.•••-21', since: 'mar/2024', programs: [P('LATAM Black'), P('Smiles Diamante · vence 20/12', true)], last: '+ R$ 50', lastColor: '#1F8A5B', lastSub: '04/11 · Crédito Mensal', bal: 4850 },
+      { name: 'Rafael Andrade', cpf: '•••.117.•••-09', since: 'jan/2025', programs: [P('LATAM Platinum'), P('Smiles Ouro')], last: '− R$ 1.420', lastColor: '#16161B', lastSub: '08/11 · Uso · Nova compra', bal: 2310 },
+      { name: 'Juliana Prado', cpf: '•••.903.•••-44', since: 'ago/2023', programs: [P('Smiles Diamante'), P('Azul Diamante')], last: '+ R$ 40', lastColor: '#1F8A5B', lastSub: '06/11 · Biometria Latam', bal: 6980 },
+      { name: 'Beatriz Lima', cpf: '•••.265.•••-70', since: 'nov/2022', programs: [P('LATAM Black Signature'), P('Azul Topázio')], last: '− R$ 2.900', lastColor: '#16161B', lastSub: '04/11 · Uso · Nova compra', bal: 12400 },
+      { name: 'Fernanda Alves', cpf: '•••.358.•••-12', since: 'jun/2024', programs: [P('Azul Safira · vence 02/01', true), P('LATAM Gold')], last: '+ R$ 50', lastColor: '#1F8A5B', lastSub: '04/11 · Crédito Mensal', bal: 3205 },
+      { name: 'Eduardo Rocha', cpf: '•••.641.•••-35', since: 'fev/2025', programs: [P('Smiles Prata')], last: '+ R$ 40', lastColor: '#1F8A5B', lastSub: '27/10 · Biometria Latam', bal: 1570 },
+      { name: 'Carlos Mendes', cpf: '•••.074.•••-88', since: 'set/2025', programs: [P('LATAM Gold')], last: '− R$ 860', lastColor: '#16161B', lastSub: '21/10 · Uso · Nova compra', bal: 940 },
+      { name: 'Thiago Nunes', cpf: '•••.529.•••-63', since: 'out/2025', programs: [P('LATAM Platinum · vence 30/11', true)], last: '+ R$ 50', lastColor: '#1F8A5B', lastSub: '04/11 · Crédito Mensal', bal: 0 }
+    ];
+    const f = this.state.filter;
+    const q = (this.state.query || '').toLowerCase();
+    const rows = all
+      .filter((c) => f === 'all' || (f === 'warn' && c.programs.some((p) => p.warn)) || (f === 'high' && c.bal >= 3000))
+      .filter((c) => !q || c.name.toLowerCase().includes(q) || c.cpf.includes(q))
+      .map((c) => ({ ...c, balance: fmt(c.bal) }));
+    const filters = [['all', 'Todos'], ['warn', 'Categoria vencendo'], ['high', 'Saldo acima de R$ 3.000']].map(([id, label]) => ({
+      label, sel: f === id, pick: () => this.setState({ filter: id })
+    }));
+    return {
+      rows, filters, count: rows.length, empty: rows.length === 0,
+      query: this.state.query,
+      lastSync: this.state.lastSync,
+      hasToast: !!this.state.toast, toast: this.state.toast,
+      syncHubspot: () => {
+        const d = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        this.setState({ lastSync: 'hoje às ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) });
+        this.flash('Saldos atualizados. 1 nova emissão do HubSpot debitada de Rafael Andrade.');
+      },
+      onSearch: (e) => this.setState({ query: e && e.target ? e.target.value : '' })
+    };
+  }
+}
+</script>
+</body>
+</html>
